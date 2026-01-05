@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jan Sunvai - Official Grievance Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="themes.css">
+    <script src="theme-toggle.js"></script>
+</head>
+
+<body>
+    <div class="main-container">
+        <!-- Official Header -->
+        <div class="page-header">
+            <div style="display: flex; justify-content: center; margin-bottom: 2rem;">
+                <img src="logo.png" alt="Jan Sunvai Logo" style="height: 80px; width: auto;">
+            </div>
+            <h1>जन सुनवाई</h1>
+            <p>Unified Public Grievance Redressal System</p>
+        </div>
+
+        <div class="role-grid">
+            <!-- Citizen Role -->
+            <a href="#" onclick="selectRole('citizen')" class="role-option">
+                <div class="role-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round" style="color: var(--color-primary);">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                </div>
+                <span class="role-label">Citizen</span>
+                <p class="role-desc">Lodge grievances, track status, and view public reports.</p>
+
+                <ul class="role-features">
+                    <li>File New Grievance</li>
+                    <li>Track Application Status</li>
+                    <li>DigiLocker Verification</li>
+                </ul>
+            </a>
+
+            <!-- Official Role -->
+            <a href="#" onclick="selectRole('official')" class="role-option">
+                <div class="role-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round" style="color: var(--color-gov-accent);">
+                        <path
+                            d="M3 21h18M5 21v-7m8 0v-7l-4-3-4 3v7m14 0v-7l-4-3-4 3v7M9 10a2 2 0 1 1-4 0m14 0a2 2 0 1 1-4 0">
+                        </path>
+                    </svg>
+                </div>
+                <span class="role-label">Department Official</span>
+                <p class="role-desc">Review complaints, manage workflows, and update status.</p>
+
+                <ul class="role-features">
+                    <li>Dashboard Overview</li>
+                    <li>Case Management</li>
+                    <li>Analytics & Reports</li>
+                </ul>
+            </a>
+        </div>
+
+        <div style="text-align: center; margin-top: 3rem; color: var(--color-text-tertiary); font-size: 0.85rem;">
+            &copy; 2026 Government of India. All rights reserved.
+        </div>
+    </div>
+
+    <div style="position: fixed; top: 1rem; right: 1rem;">
+        <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Theme">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+        </button>
+    </div>
+
+    <script>
+        function selectRole(role) {
+            sessionStorage.setItem('userRole', role);
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+
+</html>

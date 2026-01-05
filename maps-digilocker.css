@@ -1,0 +1,147 @@
+/* Additional styles for Google Maps and DigiLocker */
+
+/* Map Containers */
+.map-container {
+    width: 100%;
+    height: 300px;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    position: relative;
+}
+
+.main-map-container {
+    width: 100%;
+    height: 600px;
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    margin-top: var(--spacing-md);
+    box-shadow: var(--shadow-lg);
+}
+
+.map-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-lg);
+}
+
+.map-controls {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+    flex-wrap: wrap;
+}
+
+/* DigiLocker Verification */
+.btn-secondary {
+    background: transparent;
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
+}
+
+.btn-secondary:hover {
+    background: rgba(99, 102, 241, 0.1);
+    border-color: var(--color-primary);
+}
+
+.verification-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: rgba(16, 185, 129, 0.2);
+    color: var(--color-low);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    margin-left: var(--spacing-sm);
+}
+
+.verification-badge::before {
+    content: '✓';
+    font-size: var(--font-size-lg);
+}
+
+/* Google Maps Info Window */
+.map-info-window {
+    padding: 12px;
+    min-width: 250px;
+}
+
+.map-info-window h4 {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.map-info-window p {
+    margin: 4px 0;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+/* Autocomplete Dropdown */
+.pac-container {
+    background-color: var(--color-surface) !important;
+    border: 1px solid var(--color-border) !important;
+    border-radius: var(--radius-md) !important;
+    box-shadow: var(--shadow-lg) !important;
+    margin-top: 4px !important;
+    font-family: var(--font-family) !important;
+}
+
+.pac-item {
+    padding: 10px !important;
+    color: var(--color-text-primary) !important;
+    border-top: 1px solid var(--color-border) !important;
+    cursor: pointer !important;
+}
+
+.pac-item:first-child {
+    border-top: none !important;
+}
+
+.pac-item:hover {
+    background-color: rgba(99, 102, 241, 0.1) !important;
+}
+
+.pac-item-query {
+    color: var(--color-text-primary) !important;
+    font-weight: 600 !important;
+}
+
+.pac-matched {
+    color: var(--color-primary) !important;
+    font-weight: 600 !important;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .main-map-container {
+        height: 400px;
+    }
+    
+    .map-container {
+        height: 250px;
+    }
+    
+    .map-controls {
+        flex-direction: column;
+    }
+    
+    .map-controls .filter-select {
+        width: 100%;
+    }
+    
+    .verification-badge {
+        display: flex;
+        margin-left: 0;
+        margin-top: 8px;
+    }
+}

@@ -1,0 +1,735 @@
+/* ============================================
+   Jan Sunvai - Official Government Portal Design
+   Standard: GIGW Compliant (Guidelines for Indian Government Websites)
+   Aesthetic: Professional, Authoritative, Accessible, Minimal
+   ============================================ */
+
+:root {
+    /* Brand Colors - Official & Trustworthy */
+    --color-gov-blue: #1e3a8a;
+    /* Deep Royal Blue */
+    --color-gov-blue-dark: #172554;
+    --color-gov-accent: #f97316;
+    /* Saffron Accent */
+    --color-gov-green: #15803d;
+    /* India Green */
+
+    /* Functional Colors */
+    --color-primary: #2563eb;
+    /* Accessible Blue for Actions */
+    --color-primary-hover: #1d4ed8;
+
+    /* Backgrounds (Professional Dark Mode Default) */
+    --color-background: #0f172a;
+    /* Slate 900 - Professional Dark */
+    --color-surface: #1e293b;
+    /* Slate 800 */
+    --color-surface-elevated: #334155;
+
+    /* Text - High Contrast */
+    --color-text-primary: #f8fafc;
+    --color-text-secondary: #cbd5e1;
+    --color-text-tertiary: #94a3b8;
+
+    /* Borders - Subtle & Defined */
+    --color-border: #334155;
+
+    /* Status Indicators */
+    --color-success: #16a34a;
+    --color-warning: #ea580c;
+    --color-error: #dc2626;
+    --color-info: #2563eb;
+
+    /* Typography - Clean & Official */
+    --font-primary: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-size-sm: 0.875rem;
+    --font-size-base: 1rem;
+    --font-size-lg: 1.125rem;
+    --font-size-xl: 1.25rem;
+    --font-size-2xl: 1.5rem;
+    --font-size-header: 2rem;
+
+    /* Professional Spacing (Dense but grid-aligned) */
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+
+    /* Elements - Sharp & Defined */
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 8px;
+    /* Reduced from 16px+ */
+
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.3);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.3);
+
+    --transition-fast: 150ms ease-in-out;
+}
+
+/* Light Theme (For Office Use/Standard) */
+[data-theme="light"] {
+    --color-background: #f8fafc;
+    /* Slate 50 */
+    --color-surface: #ffffff;
+    --color-surface-elevated: #f1f5f9;
+
+    --color-text-primary: #0f172a;
+    /* Slate 900 */
+    --color-text-secondary: #475569;
+    --color-text-tertiary: #64748b;
+
+    --color-border: #cbd5e1;
+}
+
+/* ============================================
+   Base Reset
+   ============================================ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-primary);
+    background-color: var(--color-background);
+    color: var(--color-text-primary);
+    line-height: 1.5;
+    font-size: var(--font-size-base);
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ============================================
+   Header & Navigation (Official Bar)
+   ============================================ */
+.navbar {
+    background: var(--color-surface);
+    border-bottom: 2px solid var(--color-gov-accent);
+    /* Official Saffron Line */
+    padding: 0;
+    /* Tight government style */
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: var(--shadow-sm);
+}
+
+.nav-container {
+    max-width: 1400px;
+    /* Wider for dashboard view */
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    height: 70px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    text-decoration: none;
+}
+
+.brand-icon {
+    height: 44px;
+    width: auto;
+}
+
+.brand-icon img {
+    height: 100%;
+    width: auto;
+}
+
+.brand-text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.brand-text span:first-child {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    line-height: 1.1;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.brand-text span:last-child {
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    font-weight: 500;
+    letter-spacing: 1px;
+}
+
+.nav-menu {
+    display: flex;
+    gap: 2px;
+    /* Tabs style */
+    height: 100%;
+    align-items: flex-end;
+}
+
+.nav-link {
+    background: transparent;
+    border: none;
+    padding: 0 1.5rem;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    color: var(--color-text-secondary);
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all var(--transition-fast);
+}
+
+.nav-link:hover {
+    background: var(--color-surface-elevated);
+    color: var(--color-text-primary);
+}
+
+.nav-link.active {
+    color: var(--color-primary);
+    border-bottom-color: var(--color-primary);
+    background: rgba(37, 99, 235, 0.05);
+}
+
+/* ============================================
+   Layout
+   ============================================ */
+.main-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem;
+}
+
+.page-header {
+    margin-bottom: 2.5rem;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 1.5rem;
+}
+
+.page-header h1 {
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.page-header p {
+    color: var(--color-text-secondary);
+    font-size: 1rem;
+    max-width: 800px;
+}
+
+/* ============================================
+   Forms (Standardized)
+   ============================================ */
+.complaint-form {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-sm);
+    padding: 0;
+    /* Inner layout handles padding */
+    overflow: hidden;
+}
+
+.form-header {
+    background: var(--color-surface-elevated);
+    padding: 1rem 2rem;
+    border-bottom: 1px solid var(--color-border);
+    font-weight: 600;
+    color: var(--color-text-primary);
+    font-size: 1.1rem;
+}
+
+.form-body {
+    padding: 2rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--color-text-primary);
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--color-text-primary);
+    background-color: var(--color-background);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    transition: border-color var(--transition-fast);
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+select.form-control {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 16px 12px;
+}
+
+/* ============================================
+   Buttons (Authoritative)
+   ============================================ */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1.5rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.btn-primary {
+    background-color: var(--color-primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: var(--color-primary-hover);
+}
+
+.btn-secondary {
+    background-color: transparent;
+    border-color: var(--color-border);
+    color: var(--color-text-primary);
+}
+
+.btn-secondary:hover {
+    background-color: var(--color-surface-elevated);
+}
+
+.btn-icon {
+    margin-right: 0.5rem;
+}
+
+/* ============================================
+   Dashboard Components
+   ============================================ */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.stat-card:hover {
+    border-color: var(--color-primary);
+}
+
+.stat-info span {
+    display: block;
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    margin-bottom: 0.25rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.stat-info strong {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+}
+
+/* ============================================
+   Citizen View Dashboard
+   ============================================ */
+.complaints-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.complaint-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 1.5rem;
+    display: grid;
+    grid-template-columns: 100px 1fr auto;
+    /* ID, Content, Status */
+    gap: 1.5rem;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color var(--transition-fast);
+}
+
+.complaint-card:hover {
+    background-color: var(--color-surface-elevated);
+}
+
+.complaint-id-box {
+    text-align: center;
+    background: var(--color-background);
+    padding: 0.5rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+}
+
+.complaint-id-box strong {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--color-primary);
+}
+
+.complaint-id-box span {
+    font-size: 0.75rem;
+    color: var(--color-text-tertiary);
+}
+
+.complaint-main h3 {
+    font-size: 1.1rem;
+    margin-bottom: 0.25rem;
+    color: var(--color-text-primary);
+}
+
+.complaint-main p {
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+}
+
+.status-badge {
+    padding: 0.35rem 0.75rem;
+    border-radius: 99px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-badge.in-progress {
+    background: rgba(37, 99, 235, 0.1);
+    color: #60a5fa;
+}
+
+.status-badge.resolved {
+    background: rgba(22, 163, 74, 0.1);
+    color: #4ade80;
+}
+
+.status-badge.pending {
+    background: rgba(234, 88, 12, 0.1);
+    color: #fb923c;
+}
+
+:root {
+    /* Reference Theme Colors (Dark Slate & Teal) */
+    --color-background: #0f172a;
+    /* Deep Navy */
+    --color-surface: #1e293b;
+    /* Slate Card */
+    --color-surface-elevated: #334155;
+
+    --color-primary: #2dd4bf;
+    /* Teal 400 (The main accent) */
+    --color-primary-dark: #14b8a6;
+
+    --color-gov-accent: #38bdf8;
+    /* Light Blue for secondary */
+
+    --color-text-primary: #f1f5f9;
+    /* White/Grey */
+    --color-text-secondary: #94a3b8;
+    /* Muted Grey */
+    --color-text-tertiary: #64748b;
+
+    --color-border: #334155;
+    --color-border-active: #2dd4bf;
+    /* Teal Border */
+
+    --color-success: #22c55e;
+    --color-error: #ef4444;
+    --color-warning: #f59e0b;
+
+    --radius-sm: 6px;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+
+    --shadow-glow: 0 0 20px rgba(45, 212, 191, 0.2);
+}
+
+/* Base Styles */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: var(--color-background);
+    color: var(--color-text-primary);
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+/* Auth / Role Page Styles */
+.page-header h1 {
+    color: var(--color-primary);
+    /* Green/Teal Title */
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    text-align: center;
+}
+
+/* ============================================
+   Map & Extras
+   ============================================ */
+.map-container {
+    width: 100%;
+    height: 320px;
+    background: var(--color-background);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+}
+
+.loading-states {
+    text-align: center;
+    padding: 2rem;
+    color: var(--color-text-tertiary);
+}
+
+/* Modal */
+.modal {
+    background: rgba(15, 23, 42, 0.8);
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    display: none;
+    place-items: center;
+}
+
+.modal.active {
+    display: grid;
+}
+
+.modal-content {
+    background: var(--color-surface);
+    width: 90%;
+    max-width: 700px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+}
+
+.modal-header {
+    background: var(--color-background);
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--color-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+/* Utilities */
+.text-muted {
+    color: var(--color-text-tertiary);
+}
+
+.mt-4 {
+    margin-top: 1rem;
+}
+
+/* Auth Role Selection */
+.role-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+    max-width: 900px;
+    margin: 3rem auto;
+    padding: 0 1rem;
+}
+
+.role-option {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 3rem 2rem;
+    text-align: center;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.role-option:hover {
+    border-color: var(--color-primary);
+    transform: translateY(-5px);
+    box-shadow: 0 0 25px rgba(45, 212, 191, 0.2);
+    /* Teal Glow */
+}
+
+.role-icon {
+    background-color: var(--color-primary);
+    width: 80px;
+    height: 80px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    color: #0f172a;
+    /* Dark icon on Teal bg */
+    font-size: 2rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.role-icon svg {
+    width: 40px;
+    height: 40px;
+    color: #0f172a !important;
+    /* Force dark icon color */
+}
+
+.role-label {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.role-desc {
+    color: var(--color-text-secondary);
+    font-size: 1rem;
+    margin-bottom: 2rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .main-container {
+        padding: 1.5rem 1rem;
+    }
+
+    .nav-container {
+        padding: 0 1rem;
+        height: auto;
+        flex-direction: column;
+        align-items: flex-start;
+        padding-bottom: 1rem;
+    }
+
+    .nav-brand {
+        margin-bottom: 1rem;
+        margin-top: 1rem;
+    }
+
+    .nav-menu {
+        width: 100%;
+        overflow-x: auto;
+        display: flex;
+        padding-bottom: 5px;
+        /* Scrollbar space */
+    }
+
+    .nav-link {
+        padding: 0.5rem 1rem;
+        white-space: nowrap;
+    }
+
+    .role-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        margin: 2rem 0;
+    }
+
+    .complaint-card {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+
+    .complaint-id-box {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+
+    .complaint-header,
+    .complaint-footer {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+}
+
+.role-features {
+    text-align: left;
+    list-style: none;
+    border-top: 1px solid var(--color-border);
+    padding-top: 1.5rem;
+}
+
+.role-features li {
+    position: relative;
+    padding-left: 1.5rem;
+    margin-bottom: 0.75rem;
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+}
+
+.role-features li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 6px;
+    width: 6px;
+    height: 6px;
+    background: var(--color-primary);
+    border-radius: 50%;
+}

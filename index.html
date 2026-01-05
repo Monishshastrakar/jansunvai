@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>jan-sunvai - AI Grievance Redressal System</title>
+    <meta name="description"
+        content="AI-powered grievance redressal platform that intelligently analyzes, classifies, and routes citizen complaints to appropriate government departments.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="themes.css">
+    <link rel="stylesheet" href="maps-digilocker.css">
+    <script id="google-maps-script"></script>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <div class="brand-icon">
+                    <img src="logo.png" alt="jan-sunvai" style="width: 48px; height: 48px; object-fit: contain;">
+                </div>
+                <div class="brand-text">
+                    <span>Jan Sunvai</span>
+                    <span>Grievance Portal</span>
+                </div>
+            </div>
+            <div class="nav-menu">
+                <button class="nav-link active" data-view="submit">Submit Complaint</button>
+                <button class="nav-link" data-view="dashboard">Dashboard</button>
+                <button class="nav-link" data-view="map">Map View</button>
+                <button class="nav-link" data-view="analytics">Analytics</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="main-container">
+        <!-- Submit Complaint View -->
+        <section id="submit-view" class="view active">
+            <div class="page-header">
+                <h1>Submit Grievance</h1>
+                <p class="header-subtitle">AI-powered complaint analysis and intelligent routing</p>
+            </div>
+
+            <div class="form-container">
+                <form id="complaint-form" class="complaint-form">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="citizen-name">Full Name *</label>
+                            <input type="text" id="citizen-name" required placeholder="Enter your full name">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="citizen-contact">Contact Number *</label>
+                            <input type="tel" id="citizen-contact" required placeholder="Enter phone number">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="citizen-email">Email Address</label>
+                            <input type="email" id="citizen-email" placeholder="Enter email (optional)">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="citizen-location">Location *</label>
+                            <input type="text" id="citizen-location" required
+                                placeholder="Start typing your location..." autocomplete="off">
+                            <div class="input-hint">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                                    <path
+                                        d="M8 2C5.8 2 4 3.8 4 6c0 3.5 4 8 4 8s4-4.5 4-8c0-2.2-1.8-4-4-4zm0 5.5c-.8 0-1.5-.7-1.5-1.5S7.2 4.5 8 4.5 9.5 5.2 9.5 6 8.8 7.5 8 7.5z" />
+                                </svg>
+                                <span>Use autocomplete or click on the map below</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <button type="button" id="digilocker-verify-btn" class="btn btn-secondary">
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                    <path
+                                        d="M10 2L3 5v4c0 5.5 3.8 10.7 7 12 3.2-1.3 7-6.5 7-12V5l-7-3zm-1 13l-3-3 1.4-1.4L9 12.2l4.6-4.6L15 9l-6 6z" />
+                                </svg>
+                                <span>Verify with DigiLocker</span>
+                            </button>
+                            <span id="verification-status" class="verification-badge" style="display: none;"></span>
+                        </div>
+                    </div>
+
+                    <!-- Google Maps Container -->
+                    <div class="form-group">
+                        <label>Pin Location on Map (Optional)</label>
+                        <div id="complaint-map" class="map-container">
+                            <div class="map-loading">Loading map...</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="complaint-category">Category (Optional - AI will auto-detect)</label>
+                        <select id="complaint-category">
+                            <option value="">Let AI categorize automatically</option>
+                            <option value="infrastructure">Infrastructure</option>
+                            <option value="sanitation">Sanitation</option>
+                            <option value="safety">Public Safety</option>
+                            <option value="utilities">Utilities</option>
+                            <option value="healthcare">Healthcare</option>
+                            <option value="education">Education</option>
+                            <option value="administration">Administration</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="complaint-description">Describe Your Complaint *</label>
+
+                        <!-- Voice Input Button (Auto Language Detection) -->
+                        <div class="voice-input-controls"
+                            style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem; align-items: center;">
+                            <button type="button" id="voice-input-btn" class="btn btn-secondary"
+                                style="display: flex; align-items: center; gap: 0.5rem;">
+                                <svg id="mic-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                    <path
+                                        d="M10 12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2S8 2.9 8 4v6c0 1.1.9 2 2 2zm4-2c0 2.2-1.8 4-4 4s-4-1.8-4-4H4c0 2.9 2.1 5.3 5 5.8V18h2v-2.2c2.9-.5 5-2.9 5-5.8h-2z" />
+                                </svg>
+                                <span id="voice-btn-text">Voice Input</span>
+                            </button>
+                            <span id="voice-status"
+                                style="display: none; padding: 0.5rem; font-size: 0.875rem; color: var(--color-success); font-weight: 500;"></span>
+                        </div>
+
+                        <textarea id="complaint-description" rows="6" required class="form-control"
+                            placeholder="Type your complaint here in any language (Hindi, Tamil, English, etc.). Voice Input button above needs internet connection to work."></textarea>
+                        <div class="input-hint">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                                <path
+                                    d="M8 2C4.7 2 2 4.7 2 8s2.7 6 6 6 6-2.7 6-6-2.7-6-6-6zm1 9H7V7h2v4zm0-5H7V4h2v2z" />
+                            </svg>
+                            <span>Supports Voice Input & Automatic Language Detection (AI Enabled)</span>
+                        </div>
+                    </div>
+
+                    <!-- Photo Upload Section -->
+                    <div class="form-group">
+                        <label for="complaint-photos">Attach Photos (Optional)</label>
+                        <input type="file" id="complaint-photos" accept="image/jpeg,image/jpg,image/png,image/webp"
+                            multiple style="display: none;">
+                        <button type="button" id="photo-upload-btn" class="btn btn-secondary">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                <path
+                                    d="M10 5c-3.8 0-7 3.1-7 7h2c0-2.8 2.2-5 5-5s5 2.2 5 5h2c0-3.9-3.2-7-7-7zm0 3c-2.2 0-4 1.8-4 4h2c0-1.1.9-2 2-2s2 .9 2 2h2c0-2.2-1.8-4-4-4zm0-6C6.5 2 3.7 3.6 2.2 6H0l3 4 3-4H4.2C5.5 4.4 7.6 3 10 3s4.5 1.4 5.8 3H14l3 4 3-4h-2.2C16.3 3.6 13.5 2 10 2z" />
+                                <circle cx="10" cy="12" r="1.5" />
+                            </svg>
+                            <span>Add Photos</span>
+                        </button>
+                        <div class="input-hint">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                                <path
+                                    d="M8 2C4.7 2 2 4.7 2 8s2.7 6 6 6 6-2.7 6-6-2.7-6-6-6zm1 9H7V7h2v4zm0-5H7V4h2v2z" />
+                            </svg>
+                            <span>Upload images of the problem (Max 5 photos, 5MB each)</span>
+                        </div>
+                        <div id="photo-preview-container" class="photo-preview-grid">
+                            <!-- Photo previews will be inserted here -->
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <span class="btn-text">Submit Complaint</span>
+                            <svg class="btn-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M10 2L18 10L10 18M18 10H2" />
+                            </svg>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- Dashboard View -->
+        <section id="dashboard-view" class="view">
+            <div class="page-header">
+                <h1>Complaint Dashboard</h1>
+                <p class="header-subtitle">Real-time overview of all grievances</p>
+            </div>
+
+            <div class="stats-grid" id="stats-grid">
+                <!-- Stats cards will be dynamically inserted -->
+            </div>
+
+            <div class="dashboard-content">
+                <div class="section-header">
+                    <h2>Recent Complaints</h2>
+                    <div class="filter-controls">
+                        <select id="priority-filter" class="filter-select">
+                            <option value="">All Priorities</option>
+                            <option value="critical">Critical</option>
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+                        <select id="status-filter" class="filter-select">
+                            <option value="">All Status</option>
+                            <option value="pending">Pending</option>
+                            <option value="in-progress">In Progress</option>
+                            <option value="resolved">Resolved</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="complaints-list" id="complaints-list">
+                    <!-- Complaints will be dynamically inserted -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Map View -->
+        <section id="map-view" class="view">
+            <div class="page-header">
+                <h1>Complaint Map</h1>
+                <p class="header-subtitle">Geospatial visualization of all grievances</p>
+            </div>
+
+            <div class="map-controls">
+                <select id="map-category-filter" class="filter-select">
+                    <option value="">All Categories</option>
+                    <option value="infrastructure">Infrastructure</option>
+                    <option value="sanitation">Sanitation</option>
+                    <option value="safety">Public Safety</option>
+                    <option value="utilities">Utilities</option>
+                    <option value="healthcare">Healthcare</option>
+                    <option value="education">Education</option>
+                    <option value="administration">Administration</option>
+                </select>
+                <select id="map-priority-filter" class="filter-select">
+                    <option value="">All Priorities</option>
+                    <option value="critical">Critical</option>
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                    <option value="low">Low</option>
+                </select>
+            </div>
+
+            <div id="main-map" class="main-map-container">
+                <div class="map-loading">Loading map...</div>
+            </div>
+        </section>
+
+        <!-- Analytics View -->
+        <section id="analytics-view" class="view">
+            <div class="page-header">
+                <h1>Analytics & Insights</h1>
+                <p class="header-subtitle">AI-powered analysis of grievance patterns</p>
+            </div>
+
+            <div class="analytics-grid">
+                <div class="analytics-card">
+                    <h3>Priority Distribution</h3>
+                    <div class="chart-container">
+                        <canvas id="priority-chart"></canvas>
+                    </div>
+                </div>
+
+                <div class="analytics-card">
+                    <h3>Department Breakdown</h3>
+                    <div class="chart-container">
+                        <canvas id="department-chart"></canvas>
+                    </div>
+                </div>
+
+                <div class="analytics-card">
+                    <h3>Category Analysis</h3>
+                    <div class="chart-container">
+                        <canvas id="category-chart"></canvas>
+                    </div>
+                </div>
+
+                <div class="analytics-card">
+                    <h3>Resolution Trends</h3>
+                    <div class="chart-container">
+                        <canvas id="trend-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="insights-section">
+                <h3>AI Insights</h3>
+                <div id="insights-list" class="insights-list">
+                    <!-- AI insights will be dynamically generated -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Complaint Detail Modal -->
+        <div id="complaint-modal" class="modal">
+            <div class="modal-overlay"></div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Complaint Details</h2>
+                    <button class="modal-close">&times;</button>
+                </div>
+                <div class="modal-body" id="complaint-detail">
+                    <!-- Complaint details will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Success Toast -->
+    <div id="toast" class="toast">
+        <div class="toast-icon"></div>
+        <span class="toast-message"></span>
+    </div>
+
+    <!-- Gemini AI Assistant -->
+    <button id="ai-assistant-btn" class="ai-assistant-btn" title="Need help? Ask our AI Assistant">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path
+                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+        </svg>
+        <span class="ai-pulse"></span>
+    </button>
+
+    <!-- AI Assistant Chat Modal -->
+    <div id="ai-chat-modal" class="ai-chat-modal">
+        <div class="ai-chat-header">
+            <div class="ai-chat-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                </svg>
+                <span>Gemini AI Assistant</span>
+            </div>
+            <button id="ai-chat-close" class="ai-chat-close">&times;</button>
+        </div>
+        <div id="ai-chat-messages" class="ai-chat-messages">
+            <div class="ai-message">
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    <p>Hello! I'm your AI assistant. How can I help you today?</p>
+                    <p class="message-hint">You can ask me:</p>
+                    <ul class="message-hint">
+                        <li>How to file a complaint</li>
+                        <li>What priority your issue might get</li>
+                        <li>Help with describing your problem</li>
+                        <li>Questions in English or Hindi</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="ai-chat-input-container">
+            <textarea id="ai-chat-input" placeholder="Type your question or describe your problem..."
+                rows="2"></textarea>
+            <button id="ai-chat-send" class="ai-chat-send-btn">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M2 2l18 8-18 8 4-8-4-8zm2 6l8 2-8 2 2-4-2-2z" />
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <script src="bhashini-service.js"></script>
+    <script src="app.js"></script>
+    <script src="app-enhancements.js"></script>
+    <script src="gemini-assistant.js"></script>
+    <script src="role-manager.js"></script>
+    <script src="theme-toggle.js"></script>
+</body>
+
+</html>

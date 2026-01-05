@@ -1,0 +1,3 @@
+// Quick script addition to index.html
+// Add this line after app-enhancements.js:
+// <script src="role-manager.js"></script>
