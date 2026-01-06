@@ -411,27 +411,30 @@ app.use((err, req, res, next) => {
 // Start Server
 // ============================================
 
-app.listen(PORT, () => {
-    console.log('='.repeat(60));
-    console.log(`🚀 jan-sunvai API Server running on http://localhost:${PORT}`);
-    console.log('='.repeat(60));
-    console.log('\nAPI Configuration Status:');
-    console.log(`   Google Maps: ${validateApiKey(GOOGLE_MAPS_API_KEY, 'Google Maps').valid ? '✓ Configured' : '✗ Not configured'}`);
-    console.log(`   DigiLocker:  ${validateApiKey(DIGILOCKER_CLIENT_ID, 'DigiLocker').valid ? '✓ Configured' : '✗ Not configured'}`);
-    console.log('\nAvailable Endpoints:');
-    console.log('   GET  /api/health');
-    console.log('   GET  /api/maps-config');
-    console.log('   POST /api/geocode');
-    console.log('   POST /api/reverse-geocode');
-    console.log('   GET  /api/digilocker/auth');
-    console.log('   GET  /api/digilocker/callback');
-    console.log('   POST /api/digilocker/documents');
-    console.log('   POST /api/complaints');
-    console.log('   GET  * (SPA Fallback)');
-    console.log('\n' + '='.repeat(60));
-    console.log('💡 Note: Configure API keys in .env file for full functionality');
-    console.log('='.repeat(60) + '\n');
-});
+// Only run the server if executed directly (not when imported by Vercel)
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log('='.repeat(60));
+        console.log(`🚀 jan-sunvai API Server running on http://localhost:${PORT}`);
+        console.log('='.repeat(60));
+        console.log('\nAPI Configuration Status:');
+        console.log(`   Google Maps: ${validateApiKey(GOOGLE_MAPS_API_KEY, 'Google Maps').valid ? '✓ Configured' : '✗ Not configured'}`);
+        console.log(`   DigiLocker:  ${validateApiKey(DIGILOCKER_CLIENT_ID, 'DigiLocker').valid ? '✓ Configured' : '✗ Not configured'}`);
+        console.log('\nAvailable Endpoints:');
+        console.log('   GET  /api/health');
+        console.log('   GET  /api/maps-config');
+        console.log('   POST /api/geocode');
+        console.log('   POST /api/reverse-geocode');
+        console.log('   GET  /api/digilocker/auth');
+        console.log('   GET  /api/digilocker/callback');
+        console.log('   POST /api/digilocker/documents');
+        console.log('   POST /api/complaints');
+        console.log('   GET  * (SPA Fallback)');
+        console.log('\n' + '='.repeat(60));
+        console.log('💡 Note: Configure API keys in .env file for full functionality');
+        console.log('='.repeat(60) + '\n');
+    });
+}
 
 // ============================================
 // Catch-All Route (SPA Support)
