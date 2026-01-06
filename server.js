@@ -427,7 +427,16 @@ app.listen(PORT, () => {
     console.log('   GET  /api/digilocker/callback');
     console.log('   POST /api/digilocker/documents');
     console.log('   POST /api/complaints');
+    console.log('   GET  * (SPA Fallback)');
     console.log('\n' + '='.repeat(60));
     console.log('💡 Note: Configure API keys in .env file for full functionality');
     console.log('='.repeat(60) + '\n');
+});
+
+// ============================================
+// Catch-All Route (SPA Support)
+// ============================================
+// Must be after all other routes
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
