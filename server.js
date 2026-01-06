@@ -7,7 +7,9 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const bodyParser = require('body-parser');
 const axios = require('axios');
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -17,15 +19,15 @@ const PORT = process.env.PORT || 3000;
 // ============================================
 
 // CORS - Allow frontend to communicate with backend
-const allowedOrigins = process.env.ALLOWED_ORIGINS 
+const allowedOrigins = process.env.ALLOWED_ORIGINS
     ? process.env.ALLOWED_ORIGINS.split(',')
     : ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:5500', 'http://127.0.0.1:5500'];
 
 app.use(cors({
-    origin: function(origin, callback) {
+    origin: function (origin, callback) {
         // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin) return callback(null, true);
-        
+
         if (allowedOrigins.indexOf(origin) !== -1) {
             callback(null, true);
         } else {
@@ -37,6 +39,11 @@ app.use(cors({
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+// Explicitly serve index.html for root route
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
 
 // Serve static files from grievance-system directory
 app.use(express.static(__dirname));
@@ -78,16 +85,16 @@ app.post('/api/geocode', async (req, res) => {
         const { address } = req.body;
 
         if (!address) {
-            return res.status(400).json({ 
+            return res.status(400).json({
                 error: 'Address is required',
-                success: false 
+                success: false
             });
         }
 
         // Validate API key
         const validation = validateApiKey(GOOGLE_MAPS_API_KEY, 'Google Maps');
         if (!validation.valid) {
-            return res.status(503).json({ 
+            return res.status(503).json({
                 error: validation.message,
                 success: false,
                 configurationRequired: true
@@ -139,15 +146,15 @@ app.post('/api/reverse-geocode', async (req, res) => {
         const { lat, lng } = req.body;
 
         if (!lat || !lng) {
-            return res.status(400).json({ 
+            return res.status(400).json({
                 error: 'Latitude and longitude are required',
-                success: false 
+                success: false
             });
         }
 
         const validation = validateApiKey(GOOGLE_MAPS_API_KEY, 'Google Maps');
         if (!validation.valid) {
-            return res.status(503).json({ 
+            return res.status(503).json({
                 error: validation.message,
                 success: false,
                 configurationRequired: true
@@ -191,7 +198,7 @@ app.post('/api/reverse-geocode', async (req, res) => {
  */
 app.get('/api/maps-config', (req, res) => {
     const validation = validateApiKey(GOOGLE_MAPS_API_KEY, 'Google Maps');
-    
+
     if (!validation.valid) {
         return res.json({
             success: false,
@@ -217,7 +224,7 @@ app.get('/api/maps-config', (req, res) => {
  */
 app.get('/api/digilocker/auth', (req, res) => {
     const validation = validateApiKey(DIGILOCKER_CLIENT_ID, 'DigiLocker');
-    
+
     if (!validation.valid) {
         return res.status(503).json({
             error: validation.message,
@@ -345,10 +352,10 @@ app.post('/api/digilocker/documents', async (req, res) => {
 app.post('/api/complaints', async (req, res) => {
     try {
         const complaint = req.body;
-        
+
         // Here you would typically save to a database
         // For now, we'll just validate and return
-        
+
         res.json({
             success: true,
             message: 'Complaint submitted successfully',
