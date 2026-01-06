@@ -10,6 +10,9 @@ class GrievanceSystem {
     }
 
     init() {
+        if (typeof authManager !== 'undefined' && authManager.hasRole()) {
+            authManager.applyRoleRestrictions();
+        }
         this.setupEventListeners();
         this.renderDashboard();
         this.renderAnalytics();
@@ -379,7 +382,7 @@ class GrievanceSystem {
     // Complaint Management
     // ============================================
 
-    submitComplaint(formData) {
+    async submitComplaint(formData) {
         const analysis = this.analyzeComplaint(formData.description);
         const sla = this.calculateSLA(analysis.priority.level);
 
@@ -392,6 +395,8 @@ class GrievanceSystem {
                 email: formData.email || '',
                 location: formData.location
             },
+            // Add current user info if available
+            submittedBy: (typeof authManager !== 'undefined' && authManager.getCurrentUser()) ? authManager.getCurrentUser().contact : null,
             description: formData.description,
             photos: [...this.uploadedPhotos], // Add photos
             category: formData.category || analysis.category,
@@ -416,11 +421,41 @@ class GrievanceSystem {
             notes: []
         };
 
+        // Try to submit to backend
+        try {
+            const response = await fetch('/api/complaints', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(complaint)
+            });
+
+            if (response.ok) {
+                console.log('Backend submission successful');
+            } else {
+                console.warn('Backend submission failed, saving locally only');
+            }
+        } catch (error) {
+            console.error('Backend connection check failed:', error);
+            // Continue execution to save locally - graceful degradation
+        }
+
         this.complaints.unshift(complaint);
         this.saveComplaints();
 
         // Clear uploaded photos
         this.uploadedPhotos = [];
+        this.currentFilter = 'all';
+
+        // Mock Officers for Assignment Workflow
+        this.departmentOfficers = {
+            'Roads': ['Officer Rajesh', 'Officer Suresh', 'Officer Anita'],
+            'Sanitation': ['Officer Priya', 'Officer Amit', 'Officer Mahesh'],
+            'Water': ['Officer Vijay', 'Officer Sunita', 'Officer Rahul'],
+            'Electricity': ['Officer Vikram', 'Officer Meena', 'Officer Sanjay'],
+            'Other': ['Officer General', 'Officer Admin']
+        };
         this.renderPhotoPreview();
 
         return complaint;
@@ -458,25 +493,31 @@ class GrievanceSystem {
     // ============================================
 
     getStatistics() {
-        const total = this.complaints.length;
-        const pending = this.complaints.filter(c => c.status === 'pending').length;
-        const inProgress = this.complaints.filter(c => c.status === 'in-progress').length;
-        const resolved = this.complaints.filter(c => c.status === 'resolved').length;
+        // Filter complaints for citizens
+        let relevantComplaints = this.complaints;
+        if (typeof authManager !== 'undefined') {
+            relevantComplaints = authManager.filterCitizenComplaints(this.complaints);
+        }
+
+        const total = relevantComplaints.length;
+        const pending = relevantComplaints.filter(c => c.status === 'pending').length;
+        const inProgress = relevantComplaints.filter(c => c.status === 'in-progress').length;
+        const resolved = relevantComplaints.filter(c => c.status === 'resolved').length;
 
         const priorityCounts = {
-            critical: this.complaints.filter(c => c.priority.level === 'critical').length,
-            high: this.complaints.filter(c => c.priority.level === 'high').length,
-            medium: this.complaints.filter(c => c.priority.level === 'medium').length,
-            low: this.complaints.filter(c => c.priority.level === 'low').length
+            critical: relevantComplaints.filter(c => c.priority.level === 'critical').length,
+            high: relevantComplaints.filter(c => c.priority.level === 'high').length,
+            medium: relevantComplaints.filter(c => c.priority.level === 'medium').length,
+            low: relevantComplaints.filter(c => c.priority.level === 'low').length
         };
 
         const categoryData = {};
-        this.complaints.forEach(c => {
+        relevantComplaints.forEach(c => {
             categoryData[c.category] = (categoryData[c.category] || 0) + 1;
         });
 
         const departmentData = {};
-        this.complaints.forEach(c => {
+        relevantComplaints.forEach(c => {
             departmentData[c.department] = (departmentData[c.department] || 0) + 1;
         });
 
@@ -551,10 +592,126 @@ class GrievanceSystem {
     // ============================================
 
     renderDashboard() {
-        const stats = this.getStatistics();
+        // Force reload from storage to ensure data freshness
+        this.complaints = this.loadComplaints();
 
-        // Render stats cards
+        const stats = this.getStatistics();
         const statsGrid = document.getElementById('stats-grid');
+        const container = document.getElementById('dashboard-view');
+
+        // Clear previous custom dashboards (if any)
+        const existingCustom = container.querySelector('.admin-dashboard-layout');
+        if (existingCustom) existingCustom.remove();
+
+        // Check if Admin AND has valid profile data
+        if (typeof authManager !== 'undefined' && authManager.isAdmin()) {
+            const user = authManager.getCurrentUser();
+
+            // Render Admin Specific Dashboard
+            statsGrid.style.display = 'none'; // Hide default grid
+
+            let dashboardHTML = `
+                <div class="admin-dashboard-layout" style="margin-top: -1rem;">
+                    <!-- Welcome Section -->
+                    <div class="welcome-banner" style="background: linear-gradient(135deg, var(--color-surface-elevated), var(--color-surface)); padding: 2rem; border-radius: var(--radius-md); border: 1px solid var(--color-border); margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h2 style="font-size: 1.75rem; color: var(--color-text-primary); margin-bottom: 0.5rem;">Welcome, ${user.name}</h2>
+                            <p style="color: var(--color-text-secondary);">Department: <span style="color: var(--color-saffron); font-weight: 600;">${user.department}</span></p>
+                        </div>
+                        <button onclick="window.location.reload()" class="btn btn-secondary" style="font-size: 0.8rem;">
+                            🔄 Refresh Data
+                        </button>
+                    </div>
+
+                    <!-- 3-Column Stats -->
+                    <div class="stats-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
+                        <div class="stat-card" style="border-left: 4px solid var(--color-info);">
+                            <div class="stat-header"><span class="stat-title">My Pending Tasks</span></div>
+                            <div class="stat-value">${myTasks.length}</div>
+                        </div>
+                        <div class="stat-card" style="border-left: 4px solid var(--color-success);">
+                            <div class="stat-header"><span class="stat-title">Team Resolved (${user.department})</span></div>
+                            <div class="stat-value">${teamResolved}</div>
+                        </div>
+                        <div class="stat-card" style="border-left: 4px solid var(--color-warning);">
+                            <div class="stat-header"><span class="stat-title">New Incomings</span></div>
+                            <div class="stat-value">${newComplaints.length}</div>
+                        </div>
+                    </div>
+
+                    <!-- Split Layout: My Tasks & New Complaints -->
+                    <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+                        
+                        <!-- Col 1: My Tasks -->
+                        <div class="dashboard-section">
+                            <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                                <span style="background: var(--color-info); width: 8px; height: 8px; border-radius: 50%;"></span>
+                                Work Allotted to Me
+                            </h3>
+                            <div class="complaints-list" id="my-tasks-list">
+                                ${myTasks.length ? '' : '<div class="empty-state" style="padding: 2rem; text-align: center; color: var(--color-text-muted); background: var(--color-surface); border-radius: var(--radius-md);">No active tasks assigned to you.</div>'}
+                            </div>
+                        </div>
+
+                        <!-- Col 2: New Complaints -->
+                        <div class="dashboard-section">
+                            <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                                <span style="background: var(--color-warning); width: 8px; height: 8px; border-radius: 50%;"></span>
+                                New & Recent Complaints
+                            </h3>
+                            <div class="complaints-list" id="new-complaints-list">
+                                ${newComplaints.length ? '' : '<div class="empty-state" style="padding: 2rem; text-align: center; color: var(--color-text-muted);">No new complaints.</div>'}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Full List Access -->
+                    <div class="dashboard-section" style="border-top: 1px solid var(--color-border); padding-top: 2rem;">
+                        <h3 style="margin-bottom: 1rem; color: var(--color-text-secondary);">Organization Overview (Other Active Issues)</h3>
+                        <div class="complaints-list" id="all-active-list">
+                             ${allActive.length ? '' : '<div class="empty-state" style="padding: 1rem; color: var(--color-text-muted);">No other active issues.</div>'}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            const adminContainer = document.createElement('div');
+            adminContainer.innerHTML = dashboardHTML;
+            statsGrid.parentNode.insertBefore(adminContainer, statsGrid.nextSibling);
+
+            // Hide standard list
+            const standardList = document.querySelector('.complaints-list');
+            if (standardList) standardList.style.display = 'none';
+
+            // Render Assignment Cards
+            const myTasksList = document.getElementById('my-tasks-list');
+            myTasks.forEach(complaint => {
+                myTasksList.appendChild(this.createComplaintCard(complaint));
+            });
+
+            // Render New Complaints Cards
+            const newTasksList = document.getElementById('new-complaints-list');
+            newComplaints.slice(0, 5).forEach(complaint => { // Show top 5 newest
+                const card = this.createComplaintCard(complaint);
+                card.querySelector('.complaint-description').style.webkitLineClamp = '1';
+                newTasksList.appendChild(card);
+            });
+
+            // Render All Active
+            const allActiveList = document.getElementById('all-active-list');
+            allActive.slice(0, 5).forEach(complaint => {
+                const card = this.createComplaintCard(complaint);
+                allActiveList.appendChild(card);
+            });
+
+            return; // EXIT EARLY FOR ADMIN
+        }
+
+        // --- STANDARD DASHBOARD (Citizen/Guest) ---
+        statsGrid.style.display = 'grid'; // Show default grid
+        const standardList = document.querySelector('.complaints-list');
+        if (standardList) standardList.style.display = 'flex';
+
         statsGrid.innerHTML = `
             <div class="stat-card">
                 <div class="stat-header">
@@ -608,8 +765,27 @@ class GrievanceSystem {
         this.renderComplaintsList();
     }
 
+    ensureDemoAssignments(user) {
+        // Check if user has assignments
+        const hasAssignments = this.complaints.some(c => c.assignedTo === user.name);
+
+        if (!hasAssignments) {
+            // Assign 2 random in-progress complaints to this user
+            const tasks = this.complaints.filter(c => c.status === 'in-progress');
+            tasks.slice(0, 2).forEach(task => {
+                task.assignedTo = user.name;
+            });
+            this.saveComplaints();
+        }
+    }
+
     renderComplaintsList(filters = {}) {
         let complaints = [...this.complaints];
+
+        // Apply Auth Filtering
+        if (typeof authManager !== 'undefined') {
+            complaints = authManager.filterCitizenComplaints(complaints);
+        }
 
         // Apply filters
         if (filters.priority) {
@@ -631,28 +807,61 @@ class GrievanceSystem {
         }
 
         listContainer.innerHTML = complaints.map(complaint => {
-            const date = new Date(complaint.timestamp).toLocaleString();
-            const priorityClass = `badge-${complaint.priority.level}`;
-            const statusClass = `badge-${complaint.status}`;
+            // Check for Admin Role to add Actions
+            let adminActions = '';
+            if (typeof authManager !== 'undefined' && authManager.isAdmin()) {
+                const currentUser = authManager.getCurrentUser();
+                const deptOfficers = this.departmentOfficers[complaint.department || 'Other'] || this.departmentOfficers['Other'];
+
+                // Build Options
+                const options = deptOfficers.map(officer =>
+                    `<option value="${officer}" ${complaint.assignedTo === officer ? 'selected' : ''}>${officer}</option>`
+                ).join('');
+
+                // Assign Button Logic
+                const assignButton = `
+                    <div class="assign-action" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--color-border); display: flex; gap: 0.5rem; align-items: center;">
+                        <span style="font-size: 0.85rem; color: var(--color-text-secondary);">Assign To:</span>
+                        <select class="assign-select" onchange="app.assignComplaint('${complaint.id}', this.value)" style="padding: 0.25rem; font-size: 0.85rem; border-radius: 4px; border: 1px solid var(--color-border); background: var(--color-background); color: var(--color-text-primary);">
+                            <option value="">Select Officer</option>
+                            ${options}
+                        </select>
+                    </div>
+                `;
+
+                // Status Update Logic (for assigned items)
+                const statusUpdate = `
+                    <div class="status-action" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--color-border); display: flex; gap: 0.5rem; justify-content: flex-end;">
+                        ${complaint.status !== 'resolved' ?
+                        `<button onclick="app.resolveComplaint('${complaint.id}')" class="btn btn-primary" style="padding: 0.25rem 0.75rem; font-size: 0.85rem;">Mark Resolved</button>` :
+                        '<span class="badge badge-resolved">Resolved</span>'
+                    }
+                    </div>
+                `;
+
+                adminActions = assignButton + statusUpdate;
+            }
 
             return `
                 <div class="complaint-card" data-id="${complaint.id}">
                     <div class="complaint-header">
-                        <h3 class="complaint-title">${complaint.citizen.name} - ${complaint.citizen.location}</h3>
-                        <div class="complaint-meta">
-                            <span class="badge ${priorityClass}">${complaint.priority.level}</span>
-                            <span class="badge ${statusClass}">${complaint.status}</span>
+                        <div>
+                            <h3 class="complaint-title">${complaint.category}</h3>
+                            <span class="badge badge-${complaint.priority.level}">${complaint.priority.level} Priority</span>
                         </div>
+                        <span class="badge badge-${complaint.status}">${complaint.status.replace('-', ' ')}</span>
                     </div>
                     <div class="complaint-meta">
-                        <span class="badge">${complaint.category}</span>
-                        <span class="badge">${complaint.department}</span>
+                        <span>📍 ${complaint.citizen.location}</span>
+                        <span>📅 ${new Date(complaint.timestamp).toLocaleDateString()}</span>
+                        ${complaint.assignedTo ? `<span>👤 ${complaint.assignedTo}</span>` : ''}
                     </div>
                     <p class="complaint-description">${complaint.description}</p>
                     <div class="complaint-footer">
-                        <span>📅 ${date}</span>
-                        <span>Priority Score: ${complaint.priority.score}/10</span>
+                        <span>ID: #${complaint.id.slice(-6)}</span>
+                        <span>${complaint.department}</span>
                     </div>
+                    ${adminActions}
                 </div>
             `;
         }).join('');
@@ -1229,42 +1438,117 @@ const app = new GrievanceSystem();
 // Add some demo data if no complaints exist
 if (app.complaints.length === 0) {
     const demoComplaints = [
+        // RESOLVED COMPLAINTS (4)
         {
-            name: "Rajesh Kumar",
+            name: "Rajesh Patil",
             contact: "9876543210",
-            email: "rajesh@example.com",
-            location: "MG Road, Bangalore",
-            description: "Urgent! The main road near MG Road Metro has a massive pothole causing accidents. Multiple vehicles damaged. Needs immediate repair before someone gets seriously injured."
+            email: "rajesh.patil@example.com",
+            location: "Sitabuldi, Nagpur",
+            description: "Street light not working on Main Road near Sitabuldi Garden. Multiple complaints from residents about safety concerns during night hours."
         },
         {
-            name: "Priya Sharma",
+            name: "Priya Deshmukh",
             contact: "9876543211",
-            location: "Koramangala, Bangalore",
-            description: "Garbage has not been collected from our street for the past week. The smell is terrible and it's becoming a health hazard for the entire community."
+            location: "Dharampeth, Nagpur",
+            description: "Garbage collection has been irregular in our society. Request for proper waste management and daily collection schedule."
         },
         {
-            name: "Amit Patel",
+            name: "Amit Kale",
             contact: "9876543212",
-            location: "Whitefield, Bangalore",
-            description: "Water supply has been irregular for the past month. We receive water only 2-3 hours per day. This is affecting the entire neighborhood."
+            location: "Sadar, Nagpur",
+            description: "Water pipeline leak on Residency Road causing wastage. The road is waterlogged and creating traffic issues."
         },
         {
-            name: "Sunita Reddy",
+            name: "Sunita Bhosale",
             contact: "9876543213",
-            location: "Jayanagar, Bangalore",
-            description: "Request for installation of street lights in our area. The road gets very dark at night making it unsafe, especially for women and children."
+            location: "Civil Lines, Nagpur",
+            description: "Potholes on Seminary Hills Road need urgent repair. Multiple two-wheeler accidents reported in the past week."
+        },
+
+        // IN-PROGRESS COMPLAINTS (3)
+        {
+            name: "Mohammed Ansari",
+            contact: "9876543214",
+            location: "Mominpura, Nagpur",
+            description: "Urgent! Drainage overflow near Jama Masjid area. The entire street is flooded with sewage water during rains. Immediate action required as it's causing health issues."
         },
         {
-            name: "Mohammed Ali",
-            contact: "9876543214",
-            location: "Indiranagar, Bangalore",
-            description: "Emergency! Sewage overflow on main street. The entire road is flooded with sewage water. Immediate action required as it's a serious health crisis."
+            name: "Kavita Sharma",
+            contact: "9876543215",
+            location: "Manish Nagar, Nagpur",
+            description: "Broken footpath tiles on Amravati Road. Senior citizens and children are facing difficulty. Several people have tripped and injured themselves."
+        },
+        {
+            name: "Deepak Meshram",
+            contact: "9876543216",
+            location: "Laxmi Nagar, Nagpur",
+            description: "Electricity supply interruption for past 3 days in our area. No transformer maintenance done despite multiple requests to MSEDCL."
+        },
+
+        // PENDING COMPLAINTS (5)
+        {
+            name: "Sneha Raut",
+            contact: "9876543217",
+            location: "Dharampeth, Nagpur",
+            description: "Critical! Massive pothole near Kasturchand Park Metro Station causing severe accidents. Three bikes damaged yesterday. Needs immediate repair before monsoon."
+        },
+        {
+            name: "Vikas Thakre",
+            contact: "9876543218",
+            location: "Nehru Nagar, Nagpur",
+            description: "Illegal garbage dumping near Ambazari Lake. Environmental hazard affecting the lake water quality and causing foul smell in the entire neighborhood."
+        },
+        {
+            name: "Anita Warrier",
+            contact: "9876543219",
+            email: "anita.w@example.com",
+            location: "Pratap Nagar, Nagpur",
+            description: "Request for installation of speed breakers near Hislop College. Students crossing the road face extreme danger due to speeding vehicles."
+        },
+        {
+            name: "Ramesh Gawande",
+            contact: "9876543220",
+            location: "Khamla, Nagpur",
+            description: "Water supply timing is very irregular - only 1 hour per day. The entire Khamla Square area is affected. Request for proper water distribution schedule."
+        },
+        {
+            name: "Meena Bhagat",
+            contact: "9876543221",
+            location: "Gondwana Square, Nagpur",
+            description: "Stray dog menace in our residential area. Multiple bite incidents reported. Request for NMC intervention and dog rescue operations."
         }
     ];
 
-    demoComplaints.forEach(demo => {
-        app.submitComplaint(demo);
+    // Submit all demo complaints
+    demoComplaints.forEach((demo, index) => {
+        const complaint = app.submitComplaint(demo);
+
+        // Set different statuses and timestamps for realistic showcase
+        if (index < 4) {
+            // RESOLVED - complaints 0-3
+            complaint.status = 'resolved';
+            const daysAgo = 7 + index; // 7-10 days ago
+            const submittedDate = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000);
+            const resolvedDate = new Date(submittedDate.getTime() + (3 + index) * 24 * 60 * 60 * 1000);
+            complaint.timestamp = submittedDate.toISOString();
+            complaint.resolvedAt = resolvedDate.toISOString();
+        } else if (index < 7) {
+            // IN-PROGRESS - complaints 4-6
+            complaint.status = 'in-progress';
+            const daysAgo = 2 + (index - 4); // 2-4 days ago
+            const submittedDate = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000);
+            complaint.timestamp = submittedDate.toISOString();
+        } else {
+            // PENDING - complaints 7-11
+            complaint.status = 'pending';
+            const hoursAgo = (index - 7) * 6 + 2; // Stagger over past couple days
+            const submittedDate = new Date(Date.now() - hoursAgo * 60 * 60 * 1000);
+            complaint.timestamp = submittedDate.toISOString();
+        }
     });
 
+    // Save the modified complaints
+    app.saveComplaints();
     app.renderDashboard();
 }
+
